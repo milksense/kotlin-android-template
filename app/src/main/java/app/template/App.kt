@@ -28,11 +28,6 @@ class App : Application() {
 		val builder = StrictMode.VmPolicy.Builder()
 		StrictMode.setVmPolicy(builder.build())
 
-		/**
-		 * Dynamically create App Shortcuts
-		 */
-//		ShortcutHelper.createShortcuts(this)
-
 		context = applicationContext
 		packageInfo = packageManager.run {
 			if (Build.VERSION.SDK_INT >= 33) getPackageInfo(
@@ -41,7 +36,7 @@ class App : Application() {
 				getPackageInfo(packageName, 0)
 		}
 		applicationScope = CoroutineScope(SupervisorJob())
-//		DynamicColors.applyToActivitiesIfAvailable(this)
+		DynamicColors.applyToActivitiesIfAvailable(this)
 	}
 
 	/**

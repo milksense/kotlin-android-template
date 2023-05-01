@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,9 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import app.template.R
+import app.template.ui.common.ItemWithPadding
 import app.template.ui.theme.ShapeMedium
 
 private const val TAG = "MainPage"
@@ -56,7 +61,7 @@ fun MainPage(navController: NavController) {
 			TopAppBar(
 				title = {
 					Text(
-						"Simple TopAppBar",
+						stringResource(id = R.string.app_name),
 						maxLines = 1,
 						overflow = TextOverflow.Ellipsis
 					)
@@ -78,73 +83,79 @@ fun MainPage(navController: NavController) {
 					}
 				}
 			)
-
+		},
+		floatingActionButton = {
+			FloatingActionButton(onClick = { /*TODO*/ }) {
+				Icon(Icons.Filled.Add, contentDescription = "Localized description")
+			}
 		}
 	) {
 		LazyColumn(
 			modifier = Modifier.padding(it),
 		) {
-			item {
-				Box(
+			items(10) {
+				ItemWithPadding {
+					SimpleCard()
+				}
+			}
+		}
+	}
+}
+
+// TODO: Remove me
+@Composable
+fun SimpleCard() {
+	ElevatedCard(
+		modifier = Modifier
+			.clip(ShapeMedium),
+		shape = MaterialTheme.shapes.small,
+		onClick = { }
+	) {
+		Column(
+			verticalArrangement = Arrangement.spacedBy(2.dp),
+			modifier = Modifier
+				.requiredHeightIn(min = 100.dp),
+		) {
+			Row(
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				Column(
+					verticalArrangement = Arrangement.spacedBy(4.dp),
 					modifier = Modifier
-						.padding(horizontal = 16.dp)
-						.padding(top = 12.dp)
+						.weight(1f, fill = true),
 				) {
-					ElevatedCard(
+					Text(
 						modifier = Modifier
-							.clip(ShapeMedium),
-						shape = MaterialTheme.shapes.small,
-						onClick = { }
-					) {
-						Column(
-							verticalArrangement = Arrangement.spacedBy(2.dp),
+							.padding(start = 8.dp, end = 8.dp, top = 8.dp)
+							.fillMaxWidth(),
+						text = "Title",
+						style = MaterialTheme.typography.titleMedium,
+						color = MaterialTheme.colorScheme.onSurface,
+						maxLines = 2,
+						overflow = TextOverflow.Ellipsis,
+					)
+					Box {
+						Row(
+							horizontalArrangement = Arrangement.SpaceBetween,
 							modifier = Modifier
-								.requiredHeightIn(min = 100.dp),
+								.fillMaxWidth(),
 						) {
-							Row(
-								verticalAlignment = Alignment.CenterVertically
-							) {
-								Column(
-									verticalArrangement = Arrangement.spacedBy(4.dp),
-									modifier = Modifier
-										.weight(1f, fill = true),
-								) {
-									Text(
-										modifier = Modifier
-											.padding(start = 8.dp, end = 8.dp, top = 8.dp)
-											.fillMaxWidth(),
-										text = "no test string",
-										style = MaterialTheme.typography.titleMedium,
-										color = MaterialTheme.colorScheme.onSurface,
-										maxLines = 2,
-										overflow = TextOverflow.Ellipsis,
-									)
-									Box {
-										Row(
-											horizontalArrangement = Arrangement.SpaceBetween,
-											modifier = Modifier
-												.fillMaxWidth(),
-										) {
-											Text(
-												modifier = Modifier
-													.fillMaxWidth()
-													.padding(start = 8.dp, end = 8.dp),
-												text = "TEST STRING",
-												style = MaterialTheme.typography.bodyMedium,
-												color = MaterialTheme.colorScheme.onSurface,
-												maxLines = 1,
-												overflow = TextOverflow.Ellipsis,
-											)
-										}
-										Spacer(
-											modifier = Modifier
-												.fillMaxWidth()
-												.height(8.dp)
-										)
-									}
-								}
-							}
+							Text(
+								modifier = Modifier
+									.fillMaxWidth()
+									.padding(start = 8.dp, end = 8.dp),
+								text = "Awesome description",
+								style = MaterialTheme.typography.bodyMedium,
+								color = MaterialTheme.colorScheme.onSurface,
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis,
+							)
 						}
+						Spacer(
+							modifier = Modifier
+								.fillMaxWidth()
+								.height(8.dp)
+						)
 					}
 				}
 			}
