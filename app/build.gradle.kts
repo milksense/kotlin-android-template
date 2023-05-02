@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.*
+
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
 	alias(libs.plugins.androidApplication)
@@ -6,7 +9,63 @@ plugins {
 	kotlin("kapt")
 }
 
+sealed class Version(
+	open val versionMajor: Int,
+	val versionMinor: Int,
+	val versionPatch: Int,
+	val versionBuild: Int = 0,
+) {
+	abstract fun toVersionName(): String
+	class Beta(versionMajor: Int, versionMinor: Int, versionPatch: Int, versionBuild: Int) :
+		Version(versionMajor, versionMinor, versionPatch, versionBuild) {
+		override fun toVersionName(): String =
+			"${versionMajor}.${versionMinor}.${versionPatch}-beta.$versionBuild"
+	}
+
+	class Stable(versionMajor: Int, versionMinor: Int, versionPatch: Int) :
+		Version(versionMajor, versionMinor, versionPatch) {
+		override fun toVersionName(): String =
+			"${versionMajor}.${versionMinor}.${versionPatch}"
+	}
+
+	class ReleaseCandidate(
+		versionMajor: Int,
+		versionMinor: Int,
+		versionPatch: Int,
+		versionBuild: Int,
+	) :
+		Version(versionMajor, versionMinor, versionPatch, versionBuild) {
+		override fun toVersionName(): String =
+			"${versionMajor}.${versionMinor}.${versionPatch}-rc.$versionBuild"
+	}
+}
+
+val currentVersion: Version = Version.Beta(
+	versionMajor = 1,
+	versionMinor = 0,
+	versionPatch = 0,
+	versionBuild = 1
+)
+
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+
+val splitApks = !project.hasProperty("noSplits")
+
 android {
+	if (keystorePropertiesFile.exists()) {
+		val keystoreProperties = Properties()
+		keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+		signingConfigs {
+			getByName("debug")
+			{
+				keyAlias = keystoreProperties["keyAlias"].toString()
+				keyPassword = keystoreProperties["keyPassword"].toString()
+				storeFile = file(keystoreProperties["storeFile"]!!)
+				storePassword = keystoreProperties["storePassword"].toString()
+			}
+		}
+	}
+
 	namespace = "app.template"
 	compileSdk = 33
 
@@ -16,7 +75,17 @@ android {
 		minSdk = 26
 		targetSdk = 33
 		versionCode = 1
-		versionName = "1.0"
+		versionName = currentVersion.toVersionName().run {
+			if (!splitApks) "$this-(F-Droid)"
+			else this
+		}
+
+		if (!splitApks)
+			ndk {
+				(properties["ABI_FILTERS"] as String).split(';').forEach {
+					abiFilters.add(it)
+				}
+			}
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		vectorDrawables {
@@ -24,13 +93,29 @@ android {
 		}
 	}
 
+	if (splitApks)
+		splits {
+			abi {
+				isEnable = !project.hasProperty("noSplits")
+				reset()
+				include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+				isUniversalApk = false
+			}
+		}
+
 	buildTypes {
 		release {
-			isMinifyEnabled = false
+			isMinifyEnabled = true
+			isShrinkResources = true
 			proguardFiles(
-				getDefaultProguardFile("proguard-android-optimize.txt"),
-				"proguard-rules.pro"
+				getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
 			)
+			if (keystorePropertiesFile.exists())
+				signingConfig = signingConfigs.getByName("debug")
+		}
+		debug {
+			if (keystorePropertiesFile.exists())
+				signingConfig = signingConfigs.getByName("debug")
 		}
 	}
 	compileOptions {
@@ -38,7 +123,7 @@ android {
 		targetCompatibility = JavaVersion.VERSION_1_8
 	}
 	kotlinOptions {
-		jvmTarget = "1.8"
+		jvmTarget = JavaVersion.VERSION_1_8.toString()
 	}
 	kotlin {
 		jvmToolchain(8)
@@ -46,8 +131,18 @@ android {
 	buildFeatures {
 		compose = true
 	}
+
+	applicationVariants.all {
+		outputs.all {
+			(this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName =
+				"Kotlin-Template-${defaultConfig.versionName}-${name}.apk"
+		}
+	}
+
 	composeOptions {
 		kotlinCompilerExtensionVersion = "1.4.6"
+		// TODO: Alternative
+		// kotlinCompilerExtensionVersion = libs.versions.**
 	}
 	packaging {
 		resources {

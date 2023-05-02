@@ -17,6 +17,7 @@ import androidx.navigation.navigation
 import app.template.ui.common.LocalWindowWidthState
 import app.template.ui.common.Route
 import app.template.ui.common.animatedComposable
+import app.template.ui.page.main.MainPage
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import kotlinx.coroutines.Job

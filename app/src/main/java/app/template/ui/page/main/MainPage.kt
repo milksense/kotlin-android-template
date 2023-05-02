@@ -1,4 +1,4 @@
-package app.template.ui.page
+package app.template.ui.page.main
 
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.foundation.layout.Arrangement
@@ -45,7 +45,9 @@ private const val TAG = "MainPage"
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun MainPage(navController: NavController) {
+fun MainPage(
+	navController: NavController
+) {
 	val context = LocalContext.current
 	val scope = rememberCoroutineScope()
 
